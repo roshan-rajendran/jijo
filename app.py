@@ -54,8 +54,9 @@ app.config['UPLOAD_FOLDER'] = 'generated_pdfs'
 # Create upload folder if it doesn't exist
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-# Register the font
-pdfmetrics.registerFont(TTFont('BookmanOldStyle', 'fonts/BOOKOS.ttf'))
+# Register the regular and bold fonts
+pdfmetrics.registerFont(TTFont('BookmanOldStyle', 'fonts/BOOKOS.ttf'))  # Regular
+pdfmetrics.registerFont(TTFont('BookmanOldStyleBold', 'fonts/BOOKOSB.ttf'))  # Bold
 
 def create_qr_data(form_data):
     """Create formatted QR code data string"""
@@ -134,7 +135,7 @@ def fill_pdf_form(input_pdf_path, output_pdf_path, form_data):
         can.setFillColor(colors.blue)  # Use a predefined color instead
 
  
-        can.setFont("BookmanOldStyle", 8)  # Use the registered font name
+        can.setFont("BookmanOldStyle", 9)  # Use the registered font name
         clean_line = line.strip()  # Remove leading/trailing whitespace and special characters
         can.drawString(x1 -130, y + 200, clean_line)  # Moved left by 100px and up by 25px
         y -= 10
@@ -143,9 +144,11 @@ def fill_pdf_form(input_pdf_path, output_pdf_path, form_data):
         # can.drawString( 50, z, clean_line)  # Moved left by 100px and up by 25px
         z-=10
     y -= 10
-    can.setFont("BookmanOldStyle", 8)  # Use the registered font name
+    can.setFont("BookmanOldStyle",8)  # Use the registered font name
 
     can.setFillColor(colors.black)  # Use a predefined color instead
+    can.setFont("BookmanOldStyleBold", 8)  # Use the registered bold font name
+
     can.drawString(40, 450, f"Phone:")  # Adjust position as needed
     can.setFont("BookmanOldStyle", 8)  # Use the registered font name
 
@@ -156,16 +159,16 @@ def fill_pdf_form(input_pdf_path, output_pdf_path, form_data):
 
 
     fitment_details = form_data['fitment_center_details'].split('\n')
-    can.setFont("BookmanOldStyle", 8)  # Use the registered font name
+    can.setFont("BookmanOldStyle", 9)  # Use the registered font name
  
     can.setFillColor(colors.blue)  # Use a predefined color instead
 
     for line in fitment_details:
         clean_line = line.strip()  # Remove leading/trailing whitespace and special characters
         can.setFillColor(colors.blue)  # Use a predefined color instead
-        can.setFont("BookmanOldStyle", 8)  # Use the registered font name
+        can.setFont("BookmanOldStyle", 9)  # Use the registered font name
 
-        can.drawString(x1 + 90, y + 230, clean_line)
+        can.drawString(x1 + 90, y + 240, clean_line)
         y -= 10
         clean_line = line.strip()
         # can.drawString( 280, z1, clean_line)
@@ -173,11 +176,14 @@ def fill_pdf_form(input_pdf_path, output_pdf_path, form_data):
     can.setFillColor(colors.black)  # Use a predefined color instead
     can.setFont("BookmanOldStyle", 8)  # Use the registered font name
 
-    can.drawString(40, 820, f"Date:") 
-    can.drawString(62, 820, form_data['installation_date']) 
-    can.setFont("BookmanOldStyle", 8)  # Use the registered font name
+    # Get the current date and time
+    current_time = datetime.now().strftime("%H:%M:%S")  # Format: 17:15:00
 
-      
+    # Draw the date and time
+    can.drawString(34, 810, f"Date:")  # Adjust position as needed
+    can.drawString(55, 810, form_data['installation_date']+" " + str(current_time)) # This line can be removed if you only want to show the current time
+    can.setFont("BookmanOldStyleBold", 8)  # Use the registered bold font name
+
     can.drawString(256, 450, f" Phone:")  # Adjust position as needed
 # Adjust position as needed
 
@@ -198,7 +204,7 @@ def fill_pdf_form(input_pdf_path, output_pdf_path, form_data):
     can.drawString(140, 378, form_data['vehicle_reg_no'])
     can.drawString(0, 299, form_data['vehicle_reg_date'])
     y -= 20
-    can.drawString( 475,  560, form_data['rto_location'])
+    can.drawString( 475,  562, form_data['rto_location'])
     
     # SLD Details
     y -= 30
@@ -241,7 +247,7 @@ def fill_pdf_form(input_pdf_path, output_pdf_path, form_data):
     can.drawString( 475,  595, form_data['installation_date'])
     can.drawString( 263, 262, form_data['installation_date'])
 
-    can.drawString( 475,  575, form_data['sld_renewal_date'])
+    can.drawString( 475,  577, form_data['sld_renewal_date'])
     
     # Add images to the PDF
     if form_data['image1_path']:
