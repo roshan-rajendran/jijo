@@ -48,7 +48,7 @@ def fill_pdf_form(input_pdf_path, output_pdf_path, form_data):
     
     # Certificate Details - Move right by 10px and down by 5px
     can.drawString(x1 + 10, y - 9, form_data['certificate_no'])
-    can.drawString(x2 + 30, y - 385, form_data['test_report_no'])
+    can.drawString(x2 + 25, y - 385, form_data['test_report_no'])
     y -= 20
     can.drawString(x1 + 280, y - 390, form_data['tac_no'])
     
@@ -67,13 +67,15 @@ def fill_pdf_form(input_pdf_path, output_pdf_path, form_data):
     # Split address into multiple lines if needed
     customer_details = form_data['customer_details'].split('\n')
     for line in customer_details:
-        can.drawString(x1 - 100, y + 25, line)  # Moved left by 100px and up by 25px
+        clean_line = line.strip()  # Remove leading/trailing whitespace and special characters
+        can.drawString(x1 - 100, y + 25, clean_line)  # Moved left by 100px and up by 25px
         y -= 10
     
     y -= 10
     fitment_details = form_data['fitment_center_details'].split('\n')
     for line in fitment_details:
-        can.drawString(x1 + 100, y + 100, line)
+        clean_line = line.strip()  # Remove leading/trailing whitespace and special characters
+        can.drawString(x1 + 100, y + 100, clean_line)
         y -= 15
     
     # Vehicle Details
@@ -135,6 +137,27 @@ def fill_pdf_form(input_pdf_path, output_pdf_path, form_data):
     page = existing_pdf.pages[0]
     page.merge_page(new_pdf.pages[0])
     output.add_page(page)
+    
+    # Append the second PDF (PRICOLPage2a.pdf)
+    second_pdf = PdfReader("PRICOLPage2a.pdf")
+    second_packet = io.BytesIO()
+    second_can = canvas.Canvas(second_packet, pagesize=letter)
+    
+    # Draw the installation date on the second page
+    second_can.setFont("Helvetica", 10)
+    second_can.drawString(100, 796, form_data['installation_date'])
+    
+    # Save the second page
+    second_can.save()
+    second_packet.seek(0)
+    
+    # Read the new second page PDF
+    new_second_pdf = PdfReader(second_packet)
+    
+    # Merge the new second page with the existing second PDF
+    second_page = second_pdf.pages[0]
+    second_page.merge_page(new_second_pdf.pages[0])  # Merge the installation date onto the second page
+    output.add_page(second_page)
     
     # Write the output PDF
     with open(output_pdf_path, 'wb') as output_file:
