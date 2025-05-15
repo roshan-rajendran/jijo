@@ -1,13 +1,52 @@
 from flask import Flask, render_template, request, send_file
 import json
 import os
+import webbrowser
 from PyPDF2 import PdfReader, PdfWriter
 from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import letter
+from reportlab.lib.pagesizes import letter, A4
 from reportlab.lib.units import inch
+from reportlab.lib import colors
+from reportlab.lib.colors import CMYKColor
 import io
 from datetime import datetime
 from add_qr_to_pdf import add_qr_to_pdf
+import uuid
+import sys
+import subprocess
+import logging
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+
+# Suppress all stdout and stderr
+# sys.stdout = open(os.devnull, 'w')
+# sys.stderr = open(os.devnull, 'w')
+
+# log = logging.getLogger('werkzeug')
+# log.setLevel(logging.ERROR)
+
+# Define the allowed hardware ID (e.g., MAC address)
+ALLOWED_HARDWARE_ID = "f0-b6-1e-99-90-f8"  # Replace with your computer's full MAC address
+
+def get_hardware_id():
+    """Retrieve the MAC address of the current computer."""
+    try:
+        # Use the 'getmac' command to fetch the MAC address
+        result = subprocess.check_output("getmac", shell=True, text=True)
+        mac_addresses = [line.split()[0] for line in result.splitlines() if "-" in line]
+        if mac_addresses:
+            return mac_addresses[0].lower()  # Return the first valid MAC address
+        else:
+            raise ValueError("No valid MAC address found.")
+    except Exception as e:
+        print(f"Error retrieving hardware ID: {e}")
+        return None
+
+# Check if the application is running on the allowed computer
+# current_hardware_id = get_hardware_id()
+# if current_hardware_id != ALLOWED_HARDWARE_ID:
+#     print("This application is not authorized to run on this computer.")
+#     sys.exit(1)
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'generated_pdfs'
@@ -15,24 +54,28 @@ app.config['UPLOAD_FOLDER'] = 'generated_pdfs'
 # Create upload folder if it doesn't exist
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
+# Register the font
+pdfmetrics.registerFont(TTFont('BookmanOldStyle', 'fonts/BOOKOS.ttf'))
+
 def create_qr_data(form_data):
     """Create formatted QR code data string"""
     return (f"Mfg by: Pricol Ltd., "
             f"Cert No: {form_data['certificate_no']}, "
             f"Dt: {form_data['dealer_invoice_date']}, "
-            f"Veh Reg. No:{form_data['vehicle_reg_no']} "
+            f"Veh Reg. No: {form_data['vehicle_reg_no']} "
             f"Chas. No: {form_data['chassis_no']}, "
-            f"Eng. No:{form_data['engine_no']}, "
+            f"Eng. No: {form_data['engine_no']}, "
             f"SLD ECU No: {form_data['sld_ecu_no']}, "
             f"Speed: 80")
 
 def fill_pdf_form(input_pdf_path, output_pdf_path, form_data):
     # Create a new PDF with form data
     packet = io.BytesIO()
-    can = canvas.Canvas(packet, pagesize=letter)
+    can = canvas.Canvas(packet, pagesize=(letter[0], 900))
     
-    # Set consistent font and size for all text
-    can.setFont("Helvetica", 10)
+    can.setFont("BookmanOldStyle", 8)  # Use the registered font name
+   # Set the font to Bookman Old Style
+    can.setFont("BookmanOldStyle", 8)  # Use the registered font name
     
     # Start position - Base positions
     x1 = 1 * inch + 100  # Base left position
@@ -40,84 +83,174 @@ def fill_pdf_form(input_pdf_path, output_pdf_path, form_data):
     y = 500  # Base starting y position
     
     # Add "Customer Copy" text
-    can.setFont("Helvetica", 10)  # Set font for the label
-    can.drawString(x1 + 300, y + 128, "Customer Copy")  # Adjust position as needed
+    can.setFont("BookmanOldStyle", 8)  # Use the registered font name
+
+    can.setFillColor(colors.black)  # Use a predefined color instead
+    can.drawString( 500,  718, "Customer Copy")  # Adjust position as needed
     
-    # Reset font for other text
-    can.setFont("Helvetica", 10)
-    
+    can.setFont("BookmanOldStyle", 8)  # Use the registered font name
+# Reset font for other text
+    can.setFillColor(colors.blue)  # Use a predefined color instead
+    can.setFont("BookmanOldStyle", 8)  # Use the registered font name
+
     # Certificate Details - Move right by 10px and down by 5px
-    can.drawString(x1 + 10, y - 9, form_data['certificate_no'])
-    can.drawString(x2 + 25, y - 385, form_data['test_report_no'])
+    can.drawString(172, 595, form_data['certificate_no'])
+    can.setFillColor(colors.blue)  # Use a predefined color instead
+
+    can.drawString( 410, 335, form_data['test_report_no'])
     y -= 20
-    can.drawString(x1 + 280, y - 390, form_data['tac_no'])
+    can.setFillColor(colors.blue)  # Use a predefined color instead
+    can.setFont("BookmanOldStyle", 8)  # Use the registered font name
+
+    can.drawString( 410, 320, form_data['tac_no'])
     
-    # Dealer Information - Move right by 10px and up by 5px
+    can.setFont("BookmanOldStyle", 8)  # Use the registered font name
+# Dealer Information - Move right by 10px and up by 5px
     y -= 30
-    can.drawString(x1 + 10, y + 10, form_data['dealer_name'].split('&')[0] + '&')  # First part
+    can.setFillColor(colors.blue)  # Use a predefined color instead
+    can.setFont("BookmanOldStyle", 8)  # Use the registered font name
+   
+    can.drawString(172,  577, form_data['dealer_name'].split(' ')[0] + '')  # First part
     y -= 15  # Move down for the next line
-    can.drawString(x1 + 10, y + 10, form_data['dealer_name'].split('&')[1].strip())  # Second part
-    can.drawString(x2 - 240, y - 11, form_data['dealer_location'])
+    can.setFillColor(colors.blue)  # Use a predefined color instead
+    can.setFont("BookmanOldStyle", 8)  # Use the registered font name
+
+    can.drawString(172,  561, form_data['dealer_location'])
     y -= 20
-    can.drawString(x1 + 10, y - 12, form_data['dealer_invoice_no'])
-    can.drawString(x2 + 25, y - 12, form_data['dealer_invoice_date'])
+    can.setFillColor(colors.blue)  # Use a predefined color instead
+    can.setFont("BookmanOldStyle", 8)  # Use the registered font name
+ 
+    can.drawString(172,  548, form_data['dealer_invoice_no'])
+    can.setFont("BookmanOldStyle", 8)  # Use the registered font name
+    can.drawString(475,  547, form_data['dealer_invoice_date'])
     
     # Customer & Fitment Center Details
     y -= 100
     # Split address into multiple lines if needed
     customer_details = form_data['customer_details'].split('\n')
+    z=350
+    z1=350
     for line in customer_details:
+        can.setFillColor(colors.blue)  # Use a predefined color instead
+
+ 
+        can.setFont("BookmanOldStyle", 8)  # Use the registered font name
         clean_line = line.strip()  # Remove leading/trailing whitespace and special characters
-        can.drawString(x1 - 100, y + 25, clean_line)  # Moved left by 100px and up by 25px
+        can.drawString(x1 -130, y + 200, clean_line)  # Moved left by 100px and up by 25px
         y -= 10
     
+        clean_line = line.strip()
+        # can.drawString( 50, z, clean_line)  # Moved left by 100px and up by 25px
+        z-=10
     y -= 10
+    can.setFont("BookmanOldStyle", 8)  # Use the registered font name
+
+    can.setFillColor(colors.black)  # Use a predefined color instead
+    can.drawString(40, 450, f"Phone:")  # Adjust position as needed
+    can.setFont("BookmanOldStyle", 8)  # Use the registered font name
+
+    can.setFillColor(colors.blue)  # Use a predefined color instead
+    can.setFont("BookmanOldStyle", 8)  # Use the registered font name
+
+    can.drawString(68, 450, form_data['customer_phone'])  # Adjust position as needed
+
+
     fitment_details = form_data['fitment_center_details'].split('\n')
+    can.setFont("BookmanOldStyle", 8)  # Use the registered font name
+ 
+    can.setFillColor(colors.blue)  # Use a predefined color instead
+
     for line in fitment_details:
         clean_line = line.strip()  # Remove leading/trailing whitespace and special characters
-        can.drawString(x1 + 100, y + 100, clean_line)
-        y -= 15
-    
+        can.setFillColor(colors.blue)  # Use a predefined color instead
+        can.setFont("BookmanOldStyle", 8)  # Use the registered font name
+
+        can.drawString(x1 + 90, y + 230, clean_line)
+        y -= 10
+        clean_line = line.strip()
+        # can.drawString( 280, z1, clean_line)
+        z1-=10
+    can.setFillColor(colors.black)  # Use a predefined color instead
+    can.setFont("BookmanOldStyle", 8)  # Use the registered font name
+
+    can.drawString(40, 820, f"Date:") 
+    can.drawString(62, 820, form_data['installation_date']) 
+    can.setFont("BookmanOldStyle", 8)  # Use the registered font name
+
+      
+    can.drawString(256, 450, f" Phone:")  # Adjust position as needed
+# Adjust position as needed
+
+    can.setFillColor(colors.blue)  # Use a predefined color instead
+    can.setFont("BookmanOldStyle", 8)  # Use the registered font name
+
+    can.drawString(287, 450, form_data['fitment_center_phone']) # Adjust position as needed
+
     # Vehicle Details
     y -= 20
-    can.drawString(x1 + 8, y + 50, form_data['vehicle_make_model'])
-    can.drawString(x1 + 8, y-20, form_data['chassis_no'])
-    can.drawString(x1 + 10, y + 4, form_data['engine_no'])  # Moved down by 30px and right by 10px
+    can.setFillColor(colors.blue)  # Use a predefined color instead
+    can.setFont("BookmanOldStyle", 8)  # Use the registered font name
+
+    can.drawString(140,  391, form_data['vehicle_make_model'])
+    can.drawString( 140,348, form_data['chassis_no'])
+    can.drawString( 140,363, form_data['engine_no'])  # Moved down by 30px and right by 10px
     y -= 20
-    can.drawString(x1 + 10, y + 40, form_data['vehicle_reg_no'])
-    can.drawString(x2, y - 20, form_data['vehicle_reg_date'])
+    can.drawString(140, 378, form_data['vehicle_reg_no'])
+    can.drawString(0, 299, form_data['vehicle_reg_date'])
     y -= 20
-    can.drawString(x1 + 280, y + 350, form_data['rto_location'])
+    can.drawString( 475,  560, form_data['rto_location'])
     
     # SLD Details
     y -= 30
     sld_model_lines = form_data['sld_model'].split(' / ')  # Split the SLD model into parts
     for line in sld_model_lines:
-        can.drawString(x1 + 255, y + 120, line)  # Draw each line
+        can.setFillColor(colors.blue)  # Use a predefined color instead
+
+        can.drawString(410,  391, line)  # Draw each line
         y -= 15  # Move down for the next line
-    
-    can.drawString(x2 + 30, y + 105, form_data['sld_ecu_no'])
+    can.setFillColor(colors.blue)  # Use a predefined color instead
+    can.setFont("BookmanOldStyle", 8)  # Use the registered font name
+
+    can.drawString( 410,  377, form_data['sld_ecu_no'])
     y -= 20
-    can.drawString(x1 + 280, y + 430, form_data['sld_motor_unit'])
+    can.setFillColor(colors.blue)  # Use a predefined color instead
+
+    can.drawString( 410, 363, form_data['sld_motor_unit'])
     y -= 20
-    can.drawString(x1 + 278, y + 130, form_data['speed_sensor_type'])  # Moved right by 3px
-    can.drawString(x2 - 24, y - 20, form_data['roto_seal_no'])
+    can.setFillColor(colors.blue)  # Use a predefined color instead
+
+    can.drawString( 410,  350, form_data['speed_sensor_type'])  # Moved right by 3px
+    can.setFillColor(colors.blue)  # Use a predefined color instead
+  
+    can.drawString( 140,  332, form_data['roto_seal_no'])
+    # Set the CMYK values (example values)
+    cyan = 0.0
+    magenta = 0.0
+    yellow = 0.0
+    black = 1.0  # This will create a black color
+
+    can.setFillColor(colors.blue)  # Use a predefined color instead
+
     
     # Installation & Renewal Dates
+
+
     y -= 30
-    can.drawString(x1 + 280, y + 515, form_data['installation_date'])
-    can.drawString(x2 + 30, y + 495, form_data['sld_renewal_date'])
+    can.setFillColor(colors.blue)  # Use a predefined color instead
+
+    can.drawString( 475,  595, form_data['installation_date'])
+    can.drawString( 263, 262, form_data['installation_date'])
+
+    can.drawString( 475,  575, form_data['sld_renewal_date'])
     
     # Add images to the PDF
     if form_data['image1_path']:
-        print(f"Adding image1: {form_data['image1_path']}")  # Debug statement
-        can.drawImage(form_data['image1_path'], x1 + 312, y + 340, width=1 * inch, height=.7 * inch)  # Adjust size and position as needed
+        can.drawImage(form_data['image1_path'],  470, 472, width=1 * inch, height=.89 * inch)  # Adjust size and position as needed
     else:
         print("Image1 path is empty or invalid.")  # Debug statement
 
     if form_data['image2_path']:
-        print(f"Adding image2: {form_data['image2_path']}")  # Debug statement
-        can.drawImage(form_data['image2_path'], x1 + 1.5 * inch + 208, y + 280, width=1 * inch, height=.7 * inch)  # Adjust size and position as needed
+        can.drawImage(form_data['image2_path'],  470 ,  412, width=1 * inch, height=.9 * inch)  # Adjust size and position as needed
     else:
         print("Image2 path is empty or invalid.")  # Debug statement
     
@@ -138,27 +271,6 @@ def fill_pdf_form(input_pdf_path, output_pdf_path, form_data):
     page.merge_page(new_pdf.pages[0])
     output.add_page(page)
     
-    # Append the second PDF (PRICOLPage2a.pdf)
-    second_pdf = PdfReader("PRICOLPage2a.pdf")
-    second_packet = io.BytesIO()
-    second_can = canvas.Canvas(second_packet, pagesize=letter)
-    
-    # Draw the installation date on the second page
-    second_can.setFont("Helvetica", 10)
-    second_can.drawString(100, 796, form_data['installation_date'])
-    
-    # Save the second page
-    second_can.save()
-    second_packet.seek(0)
-    
-    # Read the new second page PDF
-    new_second_pdf = PdfReader(second_packet)
-    
-    # Merge the new second page with the existing second PDF
-    second_page = second_pdf.pages[0]
-    second_page.merge_page(new_second_pdf.pages[0])  # Merge the installation date onto the second page
-    output.add_page(second_page)
-    
     # Write the output PDF
     with open(output_pdf_path, 'wb') as output_file:
         output.write(output_file)
@@ -166,9 +278,10 @@ def fill_pdf_form(input_pdf_path, output_pdf_path, form_data):
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
-        print("Form submitted.")  # Debug statement
-        print(f"Request files: {request.files}")  # Debug statement
         try:
+            # Log the incoming form data
+            print(request.form)  # This will show you what data is being sent
+            
             # Use the actual form data from the user
             form_data = {
                 'certificate_no': request.form['certificate_no'],
@@ -195,6 +308,8 @@ def index():
                 'sld_renewal_date': request.form['sld_renewal_date'],
                 'image1_path': '',  # Handle image paths separately
                 'image2_path': '',  # Handle image paths separately
+                'customer_phone':request.form['customer_phone'],
+                'fitment_center_phone':request.form['fitment_center_phone']
             }
             
             # Handle image uploads
@@ -225,7 +340,7 @@ def index():
             output_path = os.path.join(app.config['UPLOAD_FOLDER'], output_filename)
             
             # First fill the PDF form
-            fill_pdf_form("PRICOL _empty.pdf", output_path, form_data)
+            fill_pdf_form("adobe1.pdf", output_path, form_data)
             
             # Then add QR code to the filled PDF
             temp_path = output_path + ".temp.pdf"
@@ -243,10 +358,16 @@ def index():
             # Send the file to user
             return send_file(output_path, as_attachment=True)
             
+        except KeyError as e:
+            print(f"Missing field: {e}")
+            print(f"Form data received: {request.form}")  # Log the entire form data
+            return render_template('index.html', message=f"Missing field: {e}", success=False)
         except Exception as e:
+            print(f"Error: {e}")
             return render_template('index.html', message=str(e), success=False)
     
     return render_template('index.html')
 
 if __name__ == '__main__':
-    app.run(debug=True) 
+    webbrowser.open("http://127.0.0.1:5000")
+    app.run(debug=False)

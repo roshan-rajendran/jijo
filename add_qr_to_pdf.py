@@ -45,7 +45,7 @@ def add_qr_to_pdf(input_pdf_path, output_pdf_path, qr_data):
     
     # Add QR code to the right side after "INSTALLATION CERTIFICATE"
     # Coordinates are from bottom-left corner
-    can.drawImage(temp_qr_path, 420, 520, width=100, height=100)
+    can.drawImage(temp_qr_path, 445, 610, width=100, height=100)
     can.save()
     
     # Move to the beginning of the buffer
