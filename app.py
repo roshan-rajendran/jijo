@@ -129,7 +129,10 @@ def fill_pdf_form(input_pdf_path, output_pdf_path, form_data):
         
         y -= 10
         can.setFillColor(colors.black)  # Use a predefined color instead
-        can.drawString(40, 450, f"Phone:")  # Adjust position as needed
+        can.setFont("BookmanOldStylBold", 8)  # Use the registered font name
+
+        can.drawString(40, 450, f"Phone:")  # Adjust posi
+        can.setFont("BookmanOldStyle", 8)  # Use the registered font name
         can.setFillColor(colors.blue)  # Use a predefined color instead
         can.drawString(68, 450, form_data['customer_phone'])  # Adjust position as needed
 
@@ -143,8 +146,11 @@ def fill_pdf_form(input_pdf_path, output_pdf_path, form_data):
         current_time = datetime.now().strftime("%H:%M:%S")  # Format: 17:15:00
         can.drawString(34, 810, f"Date:")  # Adjust position as needed
         can.drawString(55, 810, form_data['installation_date'] + " " + str(current_time))  # Draw the date and time
+        can.setFont("BookmanOldStyleBold", 8)  # Use the registered font name
 
         can.drawString(256, 450, f" Phone:")  # Adjust position as needed
+        can.setFont("BookmanOldStyle", 8)  # Use the registered font name
+
         can.setFillColor(colors.blue)  # Use a predefined color instead
         can.drawString(287, 450, form_data['fitment_center_phone'])  # Adjust position as needed
 
