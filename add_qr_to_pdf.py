@@ -36,33 +36,29 @@ def add_qr_to_pdf(input_pdf_path, output_pdf_path, qr_data):
     reader = PdfReader(input_pdf_path)
     writer = PdfWriter()
     
-    # Get the first page
-    page = reader.pages[0]
-    
-    # Create a new PDF with the QR code
-    packet = io.BytesIO()
-    can = canvas.Canvas(packet, pagesize=letter)
-    
-    # Add QR code to the right side after "INSTALLATION CERTIFICATE"
-    # Coordinates are from bottom-left corner
-    can.drawImage(temp_qr_path, 405, 610, width=100, height=100)
-    can.save()
-    
-    # Move to the beginning of the buffer
-    packet.seek(0)
-    
-    # Create a new PDF with the QR code
-    new_pdf = PdfReader(packet)
-    
-    # Merge the QR code onto the existing page
-    page.merge_page(new_pdf.pages[0])
-    
-    # Add the modified page
-    writer.add_page(page)
-    
-    # Add remaining pages
-    for page_num in range(1, len(reader.pages)):
-        writer.add_page(reader.pages[page_num])
+    # Loop through all pages
+    for page_num in range(len(reader.pages)):
+        page = reader.pages[page_num]
+        
+        # Create a new PDF with the QR code
+        packet = io.BytesIO()
+        can = canvas.Canvas(packet, pagesize=letter)
+        
+        # Add QR code to the right side
+        can.drawImage(temp_qr_path, 405, 610, width=100, height=100)
+        can.save()
+        
+        # Move to the beginning of the buffer
+        packet.seek(0)
+        
+        # Create a new PDF with the QR code
+        new_pdf = PdfReader(packet)
+        
+        # Merge the QR code onto the existing page
+        page.merge_page(new_pdf.pages[0])
+        
+        # Add the modified page
+        writer.add_page(page)
     
     # Write the modified PDF to a new file
     with open(output_pdf_path, 'wb') as output_file:

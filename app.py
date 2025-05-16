@@ -25,8 +25,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 # log = logging.getLogger('werkzeug')
 # log.setLevel(logging.ERROR)
 
-# Define the allowed hardware ID (e.g., MAC address)
-ALLOWED_HARDWARE_ID = "f0-b6-1e-99-90-f8"  # Replace with your computer's full MAC address
+ALLOWED_HARDWARE_ID = "f0-b6-1e-99-90-f8"  
 
 def get_hardware_id():
     """Retrieve the MAC address of the current computer."""
@@ -129,7 +128,7 @@ def fill_pdf_form(input_pdf_path, output_pdf_path, form_data):
         
         y -= 10
         can.setFillColor(colors.black)  # Use a predefined color instead
-        can.setFont("BookmanOldStylBold", 8)  # Use the registered font name
+        can.setFont("BookmanOldStyleBold", 8)  # Use the registered font name
 
         can.drawString(40, 450, f"Phone:")  # Adjust posi
         can.setFont("BookmanOldStyle", 8)  # Use the registered font name
@@ -139,7 +138,7 @@ def fill_pdf_form(input_pdf_path, output_pdf_path, form_data):
         fitment_details = form_data['fitment_center_details'].split('\n')
         for line in fitment_details:
             clean_line = line.strip()  # Remove leading/trailing whitespace and special characters
-            can.drawString(x1 + 90, y + 155, clean_line)
+            can.drawString(x1 + 90, y + 135, clean_line)
             y -= 10
 
         can.setFillColor(colors.black)  # Use a predefined color instead
