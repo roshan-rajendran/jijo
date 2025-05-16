@@ -126,7 +126,6 @@ def fill_pdf_form(input_pdf_path, output_pdf_path, form_data):
             can.drawString(x1 - 130, y + 115, clean_line)  # Moved left by 100px and up by 25px
             y -= 10
         
-        y -= 10
         can.setFillColor(colors.black)  # Use a predefined color instead
         can.setFont("BookmanOldStyleBold", 8)  # Use the registered font name
 
@@ -134,12 +133,12 @@ def fill_pdf_form(input_pdf_path, output_pdf_path, form_data):
         can.setFont("BookmanOldStyle", 8)  # Use the registered font name
         can.setFillColor(colors.blue)  # Use a predefined color instead
         can.drawString(68, 450, form_data['customer_phone'])  # Adjust position as needed
-
+        k = 0
         fitment_details = form_data['fitment_center_details'].split('\n')
         for line in fitment_details:
             clean_line = line.strip()  # Remove leading/trailing whitespace and special characters
-            can.drawString(x1 + 90, y + 135, clean_line)
-            y -= 10
+            can.drawString(x1 + 90, k+515, clean_line)
+            k -= 10
 
         can.setFillColor(colors.black)  # Use a predefined color instead
         current_time = datetime.now().strftime("%H:%M:%S")  # Format: 17:15:00
