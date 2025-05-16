@@ -70,213 +70,133 @@ def create_qr_data(form_data):
             f"Speed: 80")
 
 def fill_pdf_form(input_pdf_path, output_pdf_path, form_data):
-    # Create a new PDF with form data
-    packet = io.BytesIO()
-    can = canvas.Canvas(packet, pagesize=(letter[0], 900))
-    
-    can.setFont("BookmanOldStyle", 8)  # Use the registered font name
-   # Set the font to Bookman Old Style
-    can.setFont("BookmanOldStyle", 8)  # Use the registered font name
-    
-    # Start position - Base positions
-    x1 = 1 * inch + 100  # Base left position
-    x2 = 4.5 * inch + 100  # Base right position
-    y = 500  # Base starting y position
-    
-    # Add "Customer Copy" text
-    can.setFont("BookmanOldStyle", 8)  # Use the registered font name
-
-    can.setFillColor(colors.black)  # Use a predefined color instead
-    can.drawString( 500,  718, "Customer Copy")  # Adjust position as needed
-    
-    can.setFont("BookmanOldStyle", 8)  # Use the registered font name
-# Reset font for other text
-    can.setFillColor(colors.blue)  # Use a predefined color instead
-    can.setFont("BookmanOldStyle", 8)  # Use the registered font name
-
-    # Certificate Details - Move right by 10px and down by 5px
-    can.drawString(172, 595, form_data['certificate_no'])
-    can.setFillColor(colors.blue)  # Use a predefined color instead
-
-    can.drawString( 410, 335, form_data['test_report_no'])
-    y -= 20
-    can.setFillColor(colors.blue)  # Use a predefined color instead
-    can.setFont("BookmanOldStyle", 8)  # Use the registered font name
-
-    can.drawString( 410, 320, form_data['tac_no'])
-    
-    can.setFont("BookmanOldStyle", 8)  # Use the registered font name
-# Dealer Information - Move right by 10px and up by 5px
-    y -= 30
-    can.setFillColor(colors.blue)  # Use a predefined color instead
-    can.setFont("BookmanOldStyle", 8)  # Use the registered font name
-   
-    can.drawString(172,  577, form_data['dealer_name'].split(' ')[0] + '')  # First part
-    y -= 15  # Move down for the next line
-    can.setFillColor(colors.blue)  # Use a predefined color instead
-    can.setFont("BookmanOldStyle", 8)  # Use the registered font name
-
-    can.drawString(172,  561, form_data['dealer_location'])
-    y -= 20
-    can.setFillColor(colors.blue)  # Use a predefined color instead
-    can.setFont("BookmanOldStyle", 8)  # Use the registered font name
- 
-    can.drawString(172,  548, form_data['dealer_invoice_no'])
-    can.setFont("BookmanOldStyle", 8)  # Use the registered font name
-    can.drawString(475,  547, form_data['dealer_invoice_date'])
-    
-    # Customer & Fitment Center Details
-    y -= 100
-    # Split address into multiple lines if needed
-    customer_details = form_data['customer_details'].split('\n')
-    z=350
-    z1=350
-    for line in customer_details:
-        can.setFillColor(colors.blue)  # Use a predefined color instead
-
- 
-        can.setFont("BookmanOldStyle", 9)  # Use the registered font name
-        clean_line = line.strip()  # Remove leading/trailing whitespace and special characters
-        can.drawString(x1 -130, y + 200, clean_line)  # Moved left by 100px and up by 25px
-        y -= 10
-    
-        clean_line = line.strip()
-        # can.drawString( 50, z, clean_line)  # Moved left by 100px and up by 25px
-        z-=10
-    y -= 10
-    can.setFont("BookmanOldStyle",8)  # Use the registered font name
-
-    can.setFillColor(colors.black)  # Use a predefined color instead
-    can.setFont("BookmanOldStyleBold", 8)  # Use the registered bold font name
-
-    can.drawString(40, 450, f"Phone:")  # Adjust position as needed
-    can.setFont("BookmanOldStyle", 8)  # Use the registered font name
-
-    can.setFillColor(colors.blue)  # Use a predefined color instead
-    can.setFont("BookmanOldStyle", 8)  # Use the registered font name
-
-    can.drawString(68, 450, form_data['customer_phone'])  # Adjust position as needed
-
-
-    fitment_details = form_data['fitment_center_details'].split('\n')
-    can.setFont("BookmanOldStyle", 9)  # Use the registered font name
- 
-    can.setFillColor(colors.blue)  # Use a predefined color instead
-
-    for line in fitment_details:
-        clean_line = line.strip()  # Remove leading/trailing whitespace and special characters
-        can.setFillColor(colors.blue)  # Use a predefined color instead
-        can.setFont("BookmanOldStyle", 9)  # Use the registered font name
-
-        can.drawString(x1 + 90, y + 240, clean_line)
-        y -= 10
-        clean_line = line.strip()
-        # can.drawString( 280, z1, clean_line)
-        z1-=10
-    can.setFillColor(colors.black)  # Use a predefined color instead
-    can.setFont("BookmanOldStyle", 8)  # Use the registered font name
-
-    # Get the current date and time
-    current_time = datetime.now().strftime("%H:%M:%S")  # Format: 17:15:00
-
-    # Draw the date and time
-    can.drawString(34, 810, f"Date:")  # Adjust position as needed
-    can.drawString(55, 810, form_data['installation_date']+" " + str(current_time)) # This line can be removed if you only want to show the current time
-    can.setFont("BookmanOldStyleBold", 8)  # Use the registered bold font name
-
-    can.drawString(256, 450, f" Phone:")  # Adjust position as needed
-# Adjust position as needed
-
-    can.setFillColor(colors.blue)  # Use a predefined color instead
-    can.setFont("BookmanOldStyle", 8)  # Use the registered font name
-
-    can.drawString(287, 450, form_data['fitment_center_phone']) # Adjust position as needed
-
-    # Vehicle Details
-    y -= 20
-    can.setFillColor(colors.blue)  # Use a predefined color instead
-    can.setFont("BookmanOldStyle", 8)  # Use the registered font name
-
-    can.drawString(140,  391, form_data['vehicle_make_model'])
-    can.drawString( 140,348, form_data['chassis_no'])
-    can.drawString( 140,363, form_data['engine_no'])  # Moved down by 30px and right by 10px
-    y -= 20
-    can.drawString(140, 378, form_data['vehicle_reg_no'])
-    can.drawString(0, 299, form_data['vehicle_reg_date'])
-    y -= 20
-    can.drawString( 475,  562, form_data['rto_location'])
-    
-    # SLD Details
-    y -= 30
-    sld_model_lines = form_data['sld_model'].split(' / ')  # Split the SLD model into parts
-    for line in sld_model_lines:
-        can.setFillColor(colors.blue)  # Use a predefined color instead
-
-        can.drawString(410,  391, line)  # Draw each line
-        y -= 15  # Move down for the next line
-    can.setFillColor(colors.blue)  # Use a predefined color instead
-    can.setFont("BookmanOldStyle", 8)  # Use the registered font name
-
-    can.drawString( 410,  377, form_data['sld_ecu_no'])
-    y -= 20
-    can.setFillColor(colors.blue)  # Use a predefined color instead
-
-    can.drawString( 410, 363, form_data['sld_motor_unit'])
-    y -= 20
-    can.setFillColor(colors.blue)  # Use a predefined color instead
-
-    can.drawString( 410,  350, form_data['speed_sensor_type'])  # Moved right by 3px
-    can.setFillColor(colors.blue)  # Use a predefined color instead
-  
-    can.drawString( 140,  332, form_data['roto_seal_no'])
-    # Set the CMYK values (example values)
-    cyan = 0.0
-    magenta = 0.0
-    yellow = 0.0
-    black = 1.0  # This will create a black color
-
-    can.setFillColor(colors.blue)  # Use a predefined color instead
-
-    
-    # Installation & Renewal Dates
-
-
-    y -= 30
-    can.setFillColor(colors.blue)  # Use a predefined color instead
-
-    can.drawString( 475,  595, form_data['installation_date'])
-    can.drawString( 263, 262, form_data['installation_date'])
-
-    can.drawString( 475,  577, form_data['sld_renewal_date'])
-    
-    # Add images to the PDF
-    if form_data['image1_path']:
-        can.drawImage(form_data['image1_path'],  470, 472, width=1 * inch, height=.89 * inch)  # Adjust size and position as needed
-    else:
-        print("Image1 path is empty or invalid.")  # Debug statement
-
-    if form_data['image2_path']:
-        can.drawImage(form_data['image2_path'],  470 ,  412, width=1 * inch, height=.9 * inch)  # Adjust size and position as needed
-    else:
-        print("Image2 path is empty or invalid.")  # Debug statement
-    
-    can.save()
-    
-    # Move to the beginning of the buffer
-    packet.seek(0)
-    
-    # Create a new PDF with the text
-    new_pdf = PdfReader(packet)
-    
     # Read the existing PDF
     existing_pdf = PdfReader(input_pdf_path)
     output = PdfWriter()
-    
-    # Add the text to the existing page
-    page = existing_pdf.pages[0]
-    page.merge_page(new_pdf.pages[0])
-    output.add_page(page)
-    
+
+    # List of copy texts for each page
+    copy_texts = [
+        "Customer Copy",
+        "Dealer Copy",
+        "Department Copy",
+        "Manufacturer Copy"
+    ]
+
+    # Loop to create 4 pages
+    for page_number in range(4):
+        packet = io.BytesIO()
+        can = canvas.Canvas(packet, pagesize=(letter[0], 900))
+        
+        # Set the font to Bookman Old Style
+        can.setFont("BookmanOldStyle", 8)  # Use the registered font name
+        
+        # Start position - Base positions
+        x1 = 1 * inch + 100  # Base left position
+        y = 500  # Base starting y position
+
+        # Add the appropriate copy text for the current page
+        can.setFillColor(colors.black)  # Use a predefined color instead
+        can.setFillColor(colors.white)  # Set
+        can.setFillColor(colors.white)  # Set fill color to white
+        can.setStrokeColor(colors.white)         
+        can.rect(480, 716, 120, 7, fill=1)  
+        can.setFillColor(colors.black)  # Use a predefined color instead
+
+        can.drawString(480, 718, copy_texts[page_number])  # Adjust position as needed
+        
+        # Reset font for other text
+        can.setFillColor(colors.blue)  # Use a predefined color instead
+        can.setFont("BookmanOldStyle", 8)  # Use the registered font name
+
+        # Certificate Details
+        can.drawString(172, 595, form_data['certificate_no'])
+        can.drawString(410, 335, form_data['test_report_no'])
+        can.drawString(410, 320, form_data['tac_no'])
+        
+        # Dealer Information
+        can.drawString(172, 577, form_data['dealer_name'].split(' ')[0] + '')  # First part
+        can.drawString(172, 561, form_data['dealer_location'])
+        can.drawString(172, 548, form_data['dealer_invoice_no'])
+        can.drawString(475, 547, form_data['dealer_invoice_date'])
+        
+        # Customer & Fitment Center Details
+        y -= 100
+        customer_details = form_data['customer_details'].split('\n')
+        for line in customer_details:
+            clean_line = line.strip()  # Remove leading/trailing whitespace and special characters
+            can.drawString(x1 - 130, y + 115, clean_line)  # Moved left by 100px and up by 25px
+            y -= 10
+        
+        y -= 10
+        can.setFillColor(colors.black)  # Use a predefined color instead
+        can.drawString(40, 450, f"Phone:")  # Adjust position as needed
+        can.setFillColor(colors.blue)  # Use a predefined color instead
+        can.drawString(68, 450, form_data['customer_phone'])  # Adjust position as needed
+
+        fitment_details = form_data['fitment_center_details'].split('\n')
+        for line in fitment_details:
+            clean_line = line.strip()  # Remove leading/trailing whitespace and special characters
+            can.drawString(x1 + 90, y + 155, clean_line)
+            y -= 10
+
+        can.setFillColor(colors.black)  # Use a predefined color instead
+        current_time = datetime.now().strftime("%H:%M:%S")  # Format: 17:15:00
+        can.drawString(34, 810, f"Date:")  # Adjust position as needed
+        can.drawString(55, 810, form_data['installation_date'] + " " + str(current_time))  # Draw the date and time
+
+        can.drawString(256, 450, f" Phone:")  # Adjust position as needed
+        can.setFillColor(colors.blue)  # Use a predefined color instead
+        can.drawString(287, 450, form_data['fitment_center_phone'])  # Adjust position as needed
+
+        # Vehicle Details
+        y -= 20
+        can.drawString(140, 391, form_data['vehicle_make_model'])
+        can.drawString(140, 348, form_data['chassis_no'])
+        can.drawString(140, 363, form_data['engine_no'])  # Moved down by 30px and right by 10px
+        y -= 20
+        can.drawString(140, 378, form_data['vehicle_reg_no'])
+        can.drawString(0, 299, form_data['vehicle_reg_date'])
+        y -= 20
+        can.drawString(475, 562, form_data['rto_location'])
+        
+        # SLD Details
+        y -= 30
+        sld_model_lines = form_data['sld_model'].split(' / ')  # Split the SLD model into parts
+        for line in sld_model_lines:
+            can.drawString(410, 391, line)  # Draw each line
+            y -= 15  # Move down for the next line
+        can.drawString(410, 377, form_data['sld_ecu_no'])
+        y -= 20
+        can.drawString(410, 363, form_data['sld_motor_unit'])
+        y -= 20
+        can.drawString(410, 350, form_data['speed_sensor_type'])  # Moved right by 3px
+        can.drawString(140, 332, form_data['roto_seal_no'])
+
+        # Installation & Renewal Dates
+        y -= 30
+        can.drawString(475, 595, form_data['installation_date'])
+        can.drawString(263, 262, form_data['installation_date'])
+        can.drawString(475, 577, form_data['sld_renewal_date'])
+        
+        # Add images to the PDF
+        if form_data['image1_path']:
+            can.drawImage(form_data['image1_path'], 470, 472, width=1 * inch, height=.89 * inch)  # Adjust size and position as needed
+        if form_data['image2_path']:
+            can.drawImage(form_data['image2_path'], 470, 412, width=1 * inch, height=.9 * inch)  # Adjust size and position as needed
+        
+        can.save()
+        
+        # Move to the beginning of the buffer
+        packet.seek(0)
+        
+        # Create a new PDF with the text
+        new_pdf = PdfReader(packet)
+        
+        # Add the existing page from the original PDF
+        page = existing_pdf.pages[0]
+        page.merge_page(new_pdf.pages[0])
+        output.add_page(page)
+
     # Write the output PDF
     with open(output_pdf_path, 'wb') as output_file:
         output.write(output_file)
