@@ -66,7 +66,7 @@ def create_qr_data(form_data):
             f"Chas. No: {form_data['chassis_no']}, "
             f"Eng. No: {form_data['engine_no']}, "
             f"SLD ECU No: {form_data['sld_ecu_no']}, "
-            f"Speed: 80")
+            f"Speed: {form_data['speed_limit']}")
 
 def fill_pdf_form(input_pdf_path, output_pdf_path, form_data):
     # Read the existing PDF
@@ -181,6 +181,8 @@ def fill_pdf_form(input_pdf_path, output_pdf_path, form_data):
         can.drawString(475, 595, form_data['installation_date'])
         can.drawString(263, 262, form_data['installation_date'])
         can.drawString(475, 577, form_data['sld_renewal_date'])
+        can.drawString(73, 273, form_data['speed_limit'])
+
         
         # Add images to the PDF
         if form_data['image1_path']:
@@ -239,7 +241,8 @@ def index():
                 'image1_path': '',  # Handle image paths separately
                 'image2_path': '',  # Handle image paths separately
                 'customer_phone':request.form['customer_phone'],
-                'fitment_center_phone':request.form['fitment_center_phone']
+                'fitment_center_phone':request.form['fitment_center_phone'],
+                'speed_limit':request.form['speed_limit']
             }
             
             # Handle image uploads
